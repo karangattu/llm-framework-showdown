@@ -23,15 +23,16 @@ class GeneratedAppSpec(BaseModel):
     """Structured output extracted from the model."""
 
     code: str = Field(..., description="Full app source code (preferably single-file).")
-    run_command: str = Field(
-        ...,
-        description="Shell command to run the app locally from its directory.",
-    )
     requirements_txt: str = Field(
         ..., description="Contents of requirements.txt needed to run the app."
     )
+    run_command: str = Field(
+        default="",
+        description="Shell command to run the app locally (optional, auto-detected).",
+    )
     instructions: str = Field(
-        ..., description="Any extra setup/run notes (ports, env vars, etc.)."
+        default="",
+        description="Any extra setup/run notes (optional).",
     )
 
 

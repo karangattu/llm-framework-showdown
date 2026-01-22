@@ -125,8 +125,6 @@ def run_evaluation(
 
             _write_text(job_dir / "app.py", spec.code)
             _write_text(job_dir / "requirements.txt", spec.requirements_txt)
-            _write_text(job_dir / "INSTRUCTIONS.md", spec.instructions)
-            _write_text(job_dir / "RUN_COMMAND.txt", spec.run_command)
 
             gate1 = gate1_compile(job_dir / "app.py")
             screenshot_path = job_dir / "dashboard.png"

@@ -35,32 +35,32 @@ FRAMEWORK_CONFIGS: dict[Framework, FrameworkConfig] = {
     ),
     Framework.gradio: FrameworkConfig(
         name="gradio",
-        startup_timeout_s=60.0,
-        screenshot_delay_ms=1500,
+        startup_timeout_s=90.0,
+        screenshot_delay_ms=2000,
         button_selector="button",
         click_delay_ms=1200,
     ),
     Framework.shiny: FrameworkConfig(
         name="shiny",
-        startup_timeout_s=60.0,
-        screenshot_delay_ms=1500,
+        startup_timeout_s=90.0,
+        screenshot_delay_ms=2000,
         button_selector="button",
         click_delay_ms=1200,
     ),
     Framework.panel: FrameworkConfig(
         name="panel",
-        startup_timeout_s=90.0,  # Panel needs more time
-        screenshot_delay_ms=2500,  # Wait longer for Bokeh rendering
-        url_suffix="/app",  # Panel serves at /app by default
+        startup_timeout_s=120.0,
+        screenshot_delay_ms=3000,
+        url_suffix="/app",
         button_selector="button",
-        click_delay_ms=1500,
+        click_delay_ms=2000,
         requires_bokeh=True,
         extra_requirements=["panel", "bokeh"],
     ),
     Framework.dash: FrameworkConfig(
         name="dash",
-        startup_timeout_s=60.0,
-        screenshot_delay_ms=1500,
+        startup_timeout_s=90.0,
+        screenshot_delay_ms=2000,
         button_selector="button",
         click_delay_ms=1200,
     ),
