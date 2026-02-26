@@ -1,0 +1,11 @@
+# Generator script
+chatlas[anthropic]
+
+# Web frameworks (needed to run the generated apps)
+streamlit
+dash
+panel
+shiny
+
+# Evaluation
+inspect-ai

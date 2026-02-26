@@ -1,0 +1,103 @@
+---
+title: "Web Framework Evaluation"
+subtitle: "Generating tip calculator apps across 4 Python web frameworks with a single LLM prompt"
+format:
+  html:
+    theme: flatly
+    toc: true
+    toc-depth: 3
+    embed-resources: true
+---
+
+## Prompt & Model
+
+**Generator model:** `claude-sonnet-4-6` via [chatlas](https://posit-dev.github.io/chatlas/) `ChatAnthropic`
+
+**Prompt given to the LLM to generate each app:**
+
+> Create an app using **{framework}** that is a basic tip calculator which features a clean interface with input fields for the bill amount and tip percentage (with 15%, 18%, or 20% presets). It must instantly calculate and display the tip amount and the total bill (bill + tip), with an optional, useful feature to split the total among multiple people. Do not use extra packages or CSS or JavaScript other than what {framework} already provides.
+
+The `{framework}` placeholder was filled with each of: **Streamlit**, **Plotly Dash**, **Panel**, and **Shiny for Python**.
+
+## Frameworks Generated
+
+| Framework | Directory | Run Command |
+| --- | --- | --- |
+| Streamlit | `streamlit/` | `streamlit run streamlit/app.py` |
+| Plotly Dash | `dash/` | `python dash/app.py` |
+| Panel | `panel/` | `panel serve panel/app.py` |
+| Shiny for Python | `shiny/` | `shiny run shiny/app.py` |
+
+## Test Scenario
+
+Each app was started, given a bill of **\$85.50** with a **20% tip** split among **3 people**.
+
+## Before & After Screenshots
+
+### Streamlit
+
+::: {layout-ncol=2}
+![Before](streamlit/before.png)
+
+![After](streamlit/after.png)
+:::
+
+### Plotly Dash
+
+::: {layout-ncol=2}
+![Before](dash/before.png)
+
+![After](dash/after.png)
+:::
+
+### Panel
+
+::: {layout-ncol=2}
+![Before](panel/before.png)
+
+![After](panel/after.png)
+:::
+
+### Shiny for Python
+
+::: {layout-ncol=2}
+![Before](shiny/before.png)
+
+![After](shiny/after.png)
+:::
+
+## Evaluation with Inspect AI
+
+Each generated app was scored by `claude-sonnet-4-6` (via [Inspect AI](https://inspect.aisi.org.uk/)) on three criteria (1--10 scale):
+
+- **Maintainability** -- Is the code well-structured, modular, and easy to extend?
+- **Readability** -- Is it intuitive to read and idiomatic for the framework?
+- **Requirement Adherence** -- Does it meet every specification and do the screenshots confirm it works?
+
+The scorer received the full app source code plus the before/after screenshots for each framework.
+
+### Score Summary
+
+| Framework | Maintainability | Readability | Adherence |
+| --- | :---: | :---: | :---: |
+| Streamlit | 8 | 8 | 9 |
+| Plotly Dash | 7 | 7 | 9 |
+| Panel | 8 | 7 | 9 |
+| Shiny for Python | 7 | 7 | 10 |
+| **Mean** | **7.50** | **7.25** | **9.25** |
+
+### Streamlit -- Evaluation
+
+{{< include streamlit/eval_report.md >}}
+
+### Plotly Dash -- Evaluation
+
+{{< include dash/eval_report.md >}}
+
+### Panel -- Evaluation
+
+{{< include panel/eval_report.md >}}
+
+### Shiny for Python -- Evaluation
+
+{{< include shiny/eval_report.md >}}
