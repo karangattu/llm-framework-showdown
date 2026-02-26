@@ -1,55 +1,53 @@
-# llm-framework-showdown
+# LLM Framework Showdown
 
-Evaluating Code Quality &amp; Visual Design across Streamlit, Shiny, Dash, Gradio, &amp; Panel
+Generate a basic **tip calculator** web app for four Python web frameworks using an LLM — then compare the results side-by-side.
 
-## Gate 1 + Gate 2 runner
+The generator script uses [chatlas](https://posit-dev.github.io/chatlas/) with Anthropic's `claude-sonnet-4-6` to produce a self-contained `app.py` for each framework:
 
-This repo includes a small Python runner that:
+| Framework | Directory | Run command |
+|---|---|---|
+| Streamlit | `streamlit/` | `streamlit run streamlit/app.py` |
+| Plotly Dash | `dash/` | `python dash/app.py` |
+| Panel | `panel/` | `panel serve panel/app.py` |
+| Shiny for Python | `shiny/` | `shiny run shiny/app.py` |
 
-- Uses `chatlas` (AWS Bedrock Anthropic) to generate an app per (framework × prompt level × model)
-- **Gate 1:** runs `py_compile` on the generated `app.py`
-- **Gate 2:** starts the app locally and uses Playwright to capture `dashboard.png`
-- **Gate 3 (optional):** grades `dashboard.png` via Inspect AI (multimodal)
+## Prerequisites
 
-Outputs are written under `runs/` by default.
+- Python 3.13+
+- `ANTHROPIC_API_KEY` environment variable set
 
-### Prerequisites
+## Setup
 
-- Python 3.10+
-- [uv](https://docs.astral.sh/uv/) for fast package installation
-- AWS credentials configured for Bedrock access (e.g. via `AWS_PROFILE`)
-- Playwright browsers installed
+```bash
+pip install -r requirements.txt
+```
 
-### Setup
+Or with [uv](https://docs.astral.sh/uv/):
 
-Install dependencies:
+```bash
+uv pip install -r requirements.txt
+```
 
-`uv sync`
+## Generate the apps
 
-Install Playwright browsers:
+```bash
+python generate_apps.py
+```
 
-`playwright install`
+This calls `claude-sonnet-4-6` once per framework and saves each generated app to its own directory.
 
-### Run
+## Run a generated app
 
-Provide the two Bedrock model IDs you want to compare (comma-separated):
+```bash
+# Streamlit
+streamlit run streamlit/app.py
 
-`python -m eval_pipeline --models "<MODEL_ID_1>,<MODEL_ID_2>"`
+# Plotly Dash
+python dash/app.py
 
-Enable Gate 3 grading (requires an Inspect model string for the grader):
+# Panel
+panel serve panel/app.py
 
-`python -m eval_pipeline --models "<MODEL_ID_1>,<MODEL_ID_2>" --gate3 --gate3-grader-model "anthropic/bedrock/<BEDROCK_MODEL_ID_FOR_SONNET>"`
-
-Common options:
-
-- `--frameworks streamlit,gradio,shiny,panel,dash`
-- `--levels beginner,intermediate,advanced,expert`
-- `--aws-profile <profile>`
-- `--aws-region <region>`
-- `--no-gate2` (only compile)
-- `--gate3` (run screenshot grading)
-- `--gate3-grader-model <model>` (e.g. `anthropic/bedrock/...`)
-
-### Notes
-
-- Gate 2 is implemented for Streamlit, Gradio, Shiny for Python, Panel, and Dash.
+# Shiny for Python
+shiny run shiny/app.py
+```
