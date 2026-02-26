@@ -1,99 +1,132 @@
 import streamlit as st
 
-st.title("💰 Tip Calculator")
-st.write("Calculate your tip quickly and easily.")
+# ── Page config ───────────────────────────────────────────────────────────────
+st.set_page_config(
+    page_title="Tip Calculator",
+    page_icon="💰",
+    layout="centered",
+)
 
-st.subheader("Bill Details")
+# ── Title ─────────────────────────────────────────────────────────────────────
+st.title("💰 Tip Calculator")
+st.markdown("Calculate your tip and total bill instantly.")
+st.divider()
+
+# ── Bill Amount ───────────────────────────────────────────────────────────────
+st.subheader("🧾 Bill Details")
 
 bill_amount = st.number_input(
-    "Bill Amount ($)",
+    label="Bill Amount ($)",
     min_value=0.0,
     value=0.0,
     step=0.01,
-    format="%.2f"
+    format="%.2f",
+    placeholder="Enter the total bill amount...",
+    help="Enter the pre-tip bill amount in dollars.",
 )
 
-st.subheader("Tip Percentage")
+st.markdown("**Select a Tip Percentage**")
 
-preset_col1, preset_col2, preset_col3 = st.columns(3)
-
-with preset_col1:
-    btn_15 = st.button("15%", use_container_width=True)
-with preset_col2:
-    btn_18 = st.button("18%", use_container_width=True)
-with preset_col3:
-    btn_20 = st.button("20%", use_container_width=True)
-
+# ── Tip Preset Buttons ────────────────────────────────────────────────────────
+# Use session state to track selected preset vs custom slider value
 if "tip_pct" not in st.session_state:
-    st.session_state["tip_pct"] = 15.0
+    st.session_state["tip_pct"] = 18
 
-if btn_15:
-    st.session_state["tip_pct"] = 15.0
-elif btn_18:
-    st.session_state["tip_pct"] = 18.0
-elif btn_20:
-    st.session_state["tip_pct"] = 20.0
+col_p1, col_p2, col_p3 = st.columns(3)
 
-tip_percentage = st.slider(
-    "Or choose a custom tip percentage:",
+with col_p1:
+    if st.button("15%  —  Standard", use_container_width=True):
+        st.session_state["tip_pct"] = 15
+with col_p2:
+    if st.button("18%  —  Good", use_container_width=True):
+        st.session_state["tip_pct"] = 18
+with col_p3:
+    if st.button("20%  —  Great", use_container_width=True):
+        st.session_state["tip_pct"] = 20
+
+# ── Custom Tip Slider ─────────────────────────────────────────────────────────
+tip_pct = st.slider(
+    label="Or choose a custom tip percentage",
     min_value=0,
     max_value=50,
-    value=int(st.session_state["tip_pct"]),
+    value=st.session_state["tip_pct"],
     step=1,
-    format="%d%%"
+    format="%d%%",
+    help="Drag to set a custom tip percentage (0 – 50%).",
 )
 
-st.session_state["tip_pct"] = float(tip_percentage)
+# Keep session state in sync with the slider when user drags it manually
+st.session_state["tip_pct"] = tip_pct
 
-st.subheader("Split the Bill (Optional)")
+st.divider()
 
-num_people = st.number_input(
-    "Number of People",
-    min_value=1,
-    value=1,
-    step=1
+# ── Calculations ──────────────────────────────────────────────────────────────
+tip_amount  = bill_amount * tip_pct / 100
+total_bill  = bill_amount + tip_amount
+
+# ── Results ───────────────────────────────────────────────────────────────────
+st.subheader("📊 Results")
+
+res_col1, res_col2, res_col3 = st.columns(3)
+
+res_col1.metric(
+    label="Tip Percentage",
+    value=f"{tip_pct}%",
+)
+res_col2.metric(
+    label="Tip Amount",
+    value=f"${tip_amount:,.2f}",
+)
+res_col3.metric(
+    label="Total Bill",
+    value=f"${total_bill:,.2f}",
 )
 
-tip_amount = bill_amount * (tip_percentage / 100)
-total_bill = bill_amount + tip_amount
+st.divider()
 
-st.subheader("Results")
+# ── Bill Splitter (Optional Feature) ─────────────────────────────────────────
+st.subheader("🍽️ Split the Bill")
 
+split_on = st.toggle("Split the total among multiple people", value=False)
+
+if split_on:
+    num_people = st.number_input(
+        label="Number of People",
+        min_value=2,
+        max_value=100,
+        value=2,
+        step=1,
+        help="How many people are sharing the bill?",
+    )
+
+    if num_people >= 2:
+        per_person_total = total_bill / num_people
+        per_person_tip   = tip_amount / num_people
+
+        st.markdown(f"Splitting **\${total_bill:,.2f}** among **{int(num_people)} people**:")
+
+        sp_col1, sp_col2 = st.columns(2)
+        sp_col1.metric(
+            label="Each Person Pays (Tip)",
+            value=f"${per_person_tip:,.2f}",
+        )
+        sp_col2.metric(
+            label="Each Person Pays (Total)",
+            value=f"${per_person_total:,.2f}",
+        )
+
+st.divider()
+
+# ── Summary caption ───────────────────────────────────────────────────────────
 if bill_amount > 0:
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.metric("Tip Amount", f"${tip_amount:.2f}")
-
-    with col2:
-        st.metric("Total Bill", f"${total_bill:.2f}")
-
-    if num_people > 1:
-        st.write("---")
-        st.subheader(f"Split Among {num_people} People")
-
-        tip_per_person = tip_amount / num_people
-        total_per_person = total_bill / num_people
-        bill_per_person = bill_amount / num_people
-
-        col3, col4, col5 = st.columns(3)
-
-        with col3:
-            st.metric("Bill per Person", f"${bill_per_person:.2f}")
-
-        with col4:
-            st.metric("Tip per Person", f"${tip_per_person:.2f}")
-
-        with col5:
-            st.metric("Total per Person", f"${total_per_person:.2f}")
-
-    st.write("---")
-    st.write("**Summary**")
-    summary_data = {
-        "Item": ["Bill Amount", f"Tip ({tip_percentage}%)", "Total Bill"],
-        "Amount": [f"${bill_amount:.2f}", f"${tip_amount:.2f}", f"${total_bill:.2f}"]
-    }
-    st.table(summary_data)
-
+    st.caption(
+        f"📌 A {tip_pct}% tip on a **\${bill_amount:,.2f}** bill "
+        f"is **\${tip_amount:,.2f}**, making your total **\${total_bill:,.2f}**."
+        + (
+            f" Split {int(num_people)} ways, each person owes **\${per_person_total:,.2f}**."
+            if split_on and num_people >= 2
+            else ""
+        )
+    )
 else:
-    st.info("Enter a bill amount above to see your tip calculation.")
+    st.caption("👆 Enter a bill amount above to see your results instantly.")

@@ -1,62 +1,49 @@
-I'll evaluate the app on the three criteria by analyzing the code and screenshots.
+I'll evaluate this Shiny for Python tip calculator app on the three criteria.
 
-#### Criterion 1: Maintainability (1-10)
-
-**Strengths:**
-
-- Good separation of concerns: UI definition, reactive calculations, and rendering are clearly separated
-- The `calculations()` reactive calc centralizes all math logic into one function returning a dictionary — easy to extend
-- `tip_percentage()` is a separate reactive calc, showing good decomposition
-- The two-column layout using `layout_columns` is clean and scalable
-- Adding new tip presets or calculation fields would be straightforward
-
-**Weaknesses:**
-
-- The `results()` renderer builds HTML tables manually with lots of repetitive `ui.tags.tr/td` calls — this could be factored into a helper function
-- Inline styles scattered throughout the render function make style changes tedious
-- The split section logic is somewhat intertwined with the main table-building logic
-
-**Score: 7/10**
-
-#### Criterion 2: Readability (1-10)
+#### Criterion 1: Maintainability (Score: 9/10)
 
 **Strengths:**
 
-- Variable names are clear and descriptive (`bill_amount`, `tip_percentage`, `tip_per_person`, etc.)
-- The reactive chain is easy to follow: inputs → `tip_percentage()` → `calculations()` → `results()`
-- The dictionary returned from `calculations()` is self-documenting
-- Idiomatic Shiny for Python patterns are used throughout (`@reactive.calc`, `@render.ui`, etc.)
-- The conditional panel usage for "Custom" tip is a clean idiom
-
-**Weaknesses:**
-
-- The `results()` function is quite long due to manual HTML construction — a helper like `make_row(label, value)` would improve readability
-- No comments explaining the overall structure or any non-obvious decisions
-- The inline styles within tags make the rendering code visually dense
-
-**Score: 7/10**
-
-#### Criterion 3: Requirement Adherence (1-10)
-
-**Strengths:**
-
-- ✅ Input fields for bill amount and tip percentage
-- ✅ All three presets (15%, 18%, 20%) present as radio buttons plus a Custom option
-- ✅ Instantly calculates and displays tip amount and total bill (reactive)
-- ✅ Splits total among multiple people with per-person breakdown
-- ✅ No extra packages, CSS files, or JavaScript beyond Shiny's built-ins (inline styles use Shiny's tag system)
-- ✅ Screenshots confirm correct calculations: $85.50 × 20% = $17.10 tip, $102.60 total, $34.20 per person, $5.70 tip per person — all accurate
-- ✅ Split details section appears conditionally only when people > 1
+- Well-structured separation between UI and server logic with clear section comments
+- Single `calc()` reactive that centralizes all computation — easy to modify formulas in one place
+- Logical grouping of UI elements into cards (inputs, results, split)
+- Preset button handlers are clean and consistent (three separate `@reactive.effect` handlers)
+- Good use of `max(int(...), 1)` guard to prevent division by zero
+- Named outputs are clearly mapped to their display elements
 
 **Minor concerns:**
 
-- The "custom tip" adds extra functionality beyond the strict requirement but doesn't detract
-- Input numeric shows `50.0` in the before screenshot (minor display quirk)
+- The three preset handlers are slightly repetitive; a helper function could reduce boilerplate, but at this scale it's acceptable
+- The `calc()` dictionary approach works but a dataclass/namedtuple would be more maintainable at larger scale
 
-**Score: 10/10**
+#### Criterion 2: Readability (Score: 9/10)
 
----
+**Strengths:**
 
-MAINTAINABILITY_SCORE: 7
-READABILITY_SCORE: 7
-ADHERENCE_SCORE: 10
+- Excellent use of section comments (`# ── Header ──`, `# ── Server ──`, etc.) for visual scanning
+- Variable names (`bill`, `tip_pct`, `num_people`, `per_person_tip`) are highly descriptive
+- Follows idiomatic Shiny for Python patterns (`@reactive.calc`, `@render.text`, `@reactive.effect`)
+- The UI structure mirrors what the user sees, making it easy to map code to visual output
+- Arithmetic is straightforward and easy to follow
+
+**Minor concerns:**
+
+- `_apply_15`, `_apply_18`, `_apply_20` private naming convention is fine but the underscore prefix may confuse some readers
+- A brief comment explaining the `or 0.0` / `or 1` fallback pattern would help
+
+#### Criterion 3: Requirement Adherence (Score: 10/10)
+
+**Strengths:**
+
+- ✅ Input field for bill amount (numeric, default $50, step $0.01)
+- ✅ Input field for tip percentage (numeric, editable)
+- ✅ All three presets present: 15%, 18%, 20% as action buttons
+- ✅ Instant calculation (reactive, no submit button needed)
+- ✅ Displays tip amount ($17.10 for $85.50 × 20% ✓)
+- ✅ Displays total bill ($102.60 = $85.50 + $17.10 ✓)
+- ✅ Bill splitting among N people ($34.20 = $102.60 ÷ 3 ✓)
+- ✅ No external CSS, JavaScript, or extra packages used
+- ✅ Screenshots confirm correct calculations for the test case
+- The bonus "split tip only" per person is a nice addition
+
+All calculations verified against the after screenshot are mathematically correct.

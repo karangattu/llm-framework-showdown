@@ -1,54 +1,49 @@
-I'll evaluate this Streamlit tip calculator app across the three criteria.
+I'll analyze the app code and screenshots across the three criteria.
 
 #### Criterion 1: Maintainability (Score: 8/10)
 
 **Strengths:**
 
-- Code is well-organized with a logical top-to-bottom flow matching the UI sections
-- Session state is used appropriately for persisting tip percentage across reruns
-- Clear variable names (`bill_amount`, `tip_percentage`, `num_people`, etc.)
-- Results section is cleanly separated and conditionally rendered
-- The summary table uses a dictionary structure that's easy to extend
+- Code is well-organized with clear section comments using visual separators (`# ──`)
+- Logical flow: config → inputs → calculations → outputs → split feature
+- Session state is used appropriately for the tip percentage persistence
+- Calculations are isolated into simple, clear formulas
+- Good use of columns for layout consistency
 
 **Weaknesses:**
 
-- The button-to-slider synchronization creates a coupling issue — pressing a preset button sets session state, but the slider value always overwrites session state afterward, meaning the slider dominates. This is a subtle bug/design flaw.
-- No helper functions; all logic is inline, which could become harder to manage if the app grows
-- The preset buttons and slider interaction could be refactored into a cleaner pattern
+- The summary caption at the bottom references `num_people` which could cause a `NameError` if `split_on` is True but the variable is somehow not defined (minor scoping risk)
+- No functions/helpers — everything is inline, which makes future refactoring slightly harder
+- The "Splitting ... among **2 people**" bug (visible in after screenshot) indicates a display logic issue
 
-#### Criterion 2: Readability (Score: 8/10)
+#### Criterion 2: Readability (Score: 9/10)
 
 **Strengths:**
 
-- Very clean, linear structure that's easy to follow
-- Descriptive labels and subheaders make intent clear
-- Calculations (`tip_amount`, `total_bill`) are simple and self-explanatory
-- Idiomatic use of Streamlit patterns (columns, metrics, session state)
-- No unnecessary complexity
+- Excellent inline comments with clear section headers
+- Descriptive variable names (`bill_amount`, `tip_pct`, `per_person_total`, etc.)
+- Follows idiomatic Streamlit patterns (session state, columns, metrics)
+- Help text on inputs adds to self-documentation
+- Logical top-to-bottom flow mirrors the UI layout
 
 **Weaknesses:**
 
-- No comments explaining the session state logic or the button/slider sync behavior
-- The preset button logic (btn_15/18/20) is slightly awkward — a more idiomatic approach might use `st.radio` or `selectbox`
-- The slider overwriting session state immediately after the button logic could confuse future maintainers
+- Minor: the session state sync pattern (setting after slider) is slightly confusing since the buttons set it before and the slider reads it — understandable but not immediately obvious
 
-#### Criterion 3: Requirement Adherence (Score: 9/10)
+#### Criterion 3: Requirement Adherence (Score: 8/10)
 
 **Strengths:**
 
-- ✅ Bill amount input field present
-- ✅ Tip percentage input with 15%, 18%, 20% presets as buttons
-- ✅ Instant calculation of tip amount and total bill
-- ✅ Split among multiple people with detailed per-person breakdown
+- ✅ Input field for bill amount
+- ✅ 15%, 18%, 20% preset buttons are present
+- ✅ Custom tip slider also available
+- ✅ Instant calculation of tip amount and total bill displayed
+- ✅ Bill splitting feature implemented
 - ✅ No extra packages, CSS, or JavaScript used
-- ✅ Screenshots confirm correct calculations: $85.50 × 20% = $17.10 tip, $102.60 total, $34.20/person
-- ✅ Clean, professional interface
+- ✅ Before screenshot confirms clean default state
 
-**Minor gaps:**
+**Weaknesses:**
 
-- The slider allows custom percentages beyond the three presets (this is actually a bonus feature, not a deduction)
-- Preset buttons don't visually indicate which is "selected," which slightly reduces UX clarity
-
-MAINTAINABILITY_SCORE: 8
-READABILITY_SCORE: 8
-ADHERENCE_SCORE: 9
+- ❌ **Bug confirmed in after screenshot**: "Splitting $102.60 among **2 people**" is shown even though 3 people are entered (the number input shows 3 but the text says 2 — likely a Streamlit re-run/state timing issue where `num_people` lags one interaction)
+- The split toggle adds a small UX friction — could default to showing the split section more prominently
+- The "20% — Great" button in the after screenshot appears slightly highlighted but there's no clear visual indicator of the selected preset

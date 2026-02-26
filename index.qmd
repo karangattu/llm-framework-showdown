@@ -11,7 +11,9 @@ format:
 
 ## Prompt & Model
 
-**Generator model:** `claude-sonnet-4-6` via [chatlas](https://posit-dev.github.io/chatlas/) `ChatAnthropic`
+**Generator model:** `claude-sonnet-4-6` via [chatlas](https://posit-dev.github.io/chatlas/) `ChatAnthropic` with `tool_web_search()` enabled
+
+**Evaluator model:** `claude-sonnet-4-6` via [Inspect AI](https://inspect.aisi.org.uk/)
 
 **Prompt given to the LLM to generate each app:**
 
@@ -68,23 +70,21 @@ Each app was started, given a bill of **\$85.50** with a **20% tip** split among
 
 ## Evaluation with Inspect AI
 
-Each generated app was scored by `claude-sonnet-4-6` (via [Inspect AI](https://inspect.aisi.org.uk/)) on three criteria (1--10 scale):
+Each generated app was scored by `claude-sonnet-4-6` (via [Inspect AI](https://inspect.aisi.org.uk/)) on three criteria (1--10 scale). The scorer received the full app source code plus before/after screenshots:
 
 - **Maintainability** -- Is the code well-structured, modular, and easy to extend?
 - **Readability** -- Is it intuitive to read and idiomatic for the framework?
 - **Requirement Adherence** -- Does it meet every specification and do the screenshots confirm it works?
 
-The scorer received the full app source code plus the before/after screenshots for each framework.
-
 ### Score Summary
 
 | Framework | Maintainability | Readability | Adherence |
 | --- | :---: | :---: | :---: |
-| Streamlit | 8 | 8 | 9 |
-| Plotly Dash | 7 | 7 | 9 |
-| Panel | 8 | 7 | 9 |
-| Shiny for Python | 7 | 7 | 10 |
-| **Mean** | **7.50** | **7.25** | **9.25** |
+| Streamlit | 8 | 9 | 7 |
+| Plotly Dash | 8 | 8 | 10 |
+| Panel | 7 | 7 | 9 |
+| Shiny for Python | 9 | 9 | 10 |
+| **Mean** | **8.00** | **8.25** | **9.00** |
 
 ### Streamlit -- Evaluation
 

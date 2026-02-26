@@ -1,149 +1,189 @@
-from shiny import App, ui, render, reactive
+from shiny import App, render, ui, reactive
 
-app_ui = ui.page_fluid(
-    ui.h2("Tip Calculator", style="text-align: center; margin-bottom: 20px;"),
-    ui.layout_columns(
-        ui.card(
-            ui.card_header("Bill Details"),
-            ui.input_numeric(
-                "bill_amount",
-                "Bill Amount ($)",
-                value=50.00,
-                min=0,
-                step=0.01,
-            ),
-            ui.input_radio_buttons(
-                "tip_preset",
-                "Tip Percentage Presets",
-                choices={"15": "15%", "18": "18%", "20": "20%", "custom": "Custom"},
-                selected="18",
-                inline=True,
-            ),
-            ui.panel_conditional(
-                "input.tip_preset === 'custom'",
+# ── UI ────────────────────────────────────────────────────────────────────────
+app_ui = ui.page_fixed(
+
+    # ── Header ────────────────────────────────────────────────────────────────
+    ui.div(
+        ui.h1("💰 Tip Calculator", class_="mb-0"),
+        ui.p("Enter your bill details below for an instant breakdown.",
+             class_="text-muted mt-1"),
+        class_="text-center py-4 border-bottom mb-4",
+    ),
+
+    # ── Input card ────────────────────────────────────────────────────────────
+    ui.card(
+        ui.card_header(ui.h5("📋 Bill Details", class_="mb-0")),
+        ui.layout_columns(
+            # Bill amount
+            ui.div(
                 ui.input_numeric(
-                    "custom_tip",
-                    "Custom Tip (%)",
+                    "bill",
+                    "Bill Amount ($)",
+                    value=50.00,
+                    min=0,
+                    step=0.01,
+                ),
+            ),
+            # Custom tip %
+            ui.div(
+                ui.input_numeric(
+                    "tip_pct",
+                    "Tip Percentage (%)",
                     value=18,
                     min=0,
                     max=100,
                     step=1,
                 ),
             ),
-            ui.input_numeric(
-                "num_people",
-                "Number of People (to split the bill)",
-                value=1,
-                min=1,
-                step=1,
+            col_widths=[6, 6],
+        ),
+
+        # ── Preset tip buttons ─────────────────────────────────────────────
+        ui.div(
+            ui.p("Quick-select tip %:", class_="mb-2 fw-semibold"),
+            ui.div(
+                ui.input_action_button(
+                    "preset_15", "15%",
+                    class_="btn btn-outline-secondary me-2",
+                ),
+                ui.input_action_button(
+                    "preset_18", "18%",
+                    class_="btn btn-outline-primary me-2",
+                ),
+                ui.input_action_button(
+                    "preset_20", "20%",
+                    class_="btn btn-outline-secondary",
+                ),
             ),
+            class_="mb-2",
         ),
-        ui.card(
-            ui.card_header("Calculation Results"),
-            ui.output_ui("results"),
-        ),
-        col_widths=[6, 6],
     ),
+
+    ui.br(),
+
+    # ── Results card ──────────────────────────────────────────────────────────
+    ui.card(
+        ui.card_header(ui.h5("🧾 Your Bill Summary", class_="mb-0")),
+        ui.layout_columns(
+            # Tip amount
+            ui.value_box(
+                title="Tip Amount",
+                value=ui.output_text("tip_amount"),
+                theme="bg-gradient-blue-purple",
+            ),
+            # Total bill
+            ui.value_box(
+                title="Total Bill",
+                value=ui.output_text("total_bill"),
+                theme="bg-gradient-orange-red",
+            ),
+            col_widths=[6, 6],
+        ),
+    ),
+
+    ui.br(),
+
+    # ── Split the bill card ───────────────────────────────────────────────────
+    ui.card(
+        ui.card_header(
+            ui.layout_columns(
+                ui.h5("👥 Split the Bill", class_="mb-0"),
+                ui.div(
+                    ui.input_numeric(
+                        "num_people",
+                        "Number of People",
+                        value=2,
+                        min=1,
+                        step=1,
+                    ),
+                    class_="",
+                ),
+                col_widths=[6, 6],
+            )
+        ),
+        ui.layout_columns(
+            ui.value_box(
+                title="Each Person Pays (tip only)",
+                value=ui.output_text("split_tip"),
+                theme="bg-gradient-teal-cyan",
+            ),
+            ui.value_box(
+                title="Each Person Pays (total)",
+                value=ui.output_text("split_total"),
+                theme="bg-gradient-green-teal",
+            ),
+            col_widths=[6, 6],
+        ),
+    ),
+
+    ui.br(),
+
+    # ── Footer ────────────────────────────────────────────────────────────────
+    ui.div(
+        ui.p("Tip amounts are rounded to the nearest cent.", class_="text-muted small"),
+        class_="text-center pb-4",
+    ),
+
+    title="Tip Calculator",
 )
 
 
+# ── Server ────────────────────────────────────────────────────────────────────
 def server(input, output, session):
+
+    # ── Preset button handlers: update tip_pct numeric input ──────────────────
+    @reactive.effect
+    @reactive.event(input.preset_15)
+    def _apply_15():
+        ui.update_numeric("tip_pct", value=15)
+
+    @reactive.effect
+    @reactive.event(input.preset_18)
+    def _apply_18():
+        ui.update_numeric("tip_pct", value=18)
+
+    @reactive.effect
+    @reactive.event(input.preset_20)
+    def _apply_20():
+        ui.update_numeric("tip_pct", value=20)
+
+    # ── Reactive calculation ──────────────────────────────────────────────────
     @reactive.calc
-    def tip_percentage():
-        if input.tip_preset() == "custom":
-            val = input.custom_tip()
-            if val is None or val < 0:
-                return 0
-            return val
-        else:
-            return float(input.tip_preset())
+    def calc():
+        bill = input.bill() or 0.0
+        pct  = input.tip_pct() or 0.0
+        people = max(int(input.num_people() or 1), 1)
 
-    @reactive.calc
-    def calculations():
-        bill = input.bill_amount()
-        if bill is None or bill < 0:
-            bill = 0
-
-        tip_pct = tip_percentage()
-        num_people = input.num_people()
-        if num_people is None or num_people < 1:
-            num_people = 1
-
-        tip_amount = bill * (tip_pct / 100)
-        total = bill + tip_amount
-        per_person = total / num_people
-        tip_per_person = tip_amount / num_people
+        tip   = round(bill * pct / 100, 2)
+        total = round(bill + tip, 2)
+        per_person_tip   = round(tip   / people, 2)
+        per_person_total = round(total / people, 2)
 
         return {
-            "bill": bill,
-            "tip_pct": tip_pct,
-            "tip_amount": tip_amount,
+            "tip":   tip,
             "total": total,
-            "num_people": num_people,
-            "per_person": per_person,
-            "tip_per_person": tip_per_person,
+            "split_tip":   per_person_tip,
+            "split_total": per_person_total,
         }
 
-    @output
-    @render.ui
-    def results():
-        c = calculations()
+    # ── Outputs ───────────────────────────────────────────────────────────────
+    @render.text
+    def tip_amount():
+        return f"${calc()['tip']:,.2f}"
 
-        rows = [
-            ("Bill Amount", f"${c['bill']:.2f}"),
-            ("Tip Percentage", f"{c['tip_pct']:.1f}%"),
-            ("Tip Amount", f"${c['tip_amount']:.2f}"),
-            ("Total Bill", f"${c['total']:.2f}"),
-        ]
+    @render.text
+    def total_bill():
+        return f"${calc()['total']:,.2f}"
 
-        table_rows = []
-        for label, value in rows:
-            table_rows.append(
-                ui.tags.tr(
-                    ui.tags.td(
-                        ui.tags.strong(label),
-                        style="padding: 8px 12px; border-bottom: 1px solid #dee2e6;",
-                    ),
-                    ui.tags.td(
-                        value,
-                        style="padding: 8px 12px; border-bottom: 1px solid #dee2e6; text-align: right;",
-                    ),
-                )
-            )
+    @render.text
+    def split_tip():
+        return f"${calc()['split_tip']:,.2f}"
 
-        if c["num_people"] > 1:
-            split_rows = [
-                ("Number of People", str(int(c["num_people"]))),
-                ("Tip Per Person", f"${c['tip_per_person']:.2f}"),
-                ("Total Per Person", f"${c['per_person']:.2f}"),
-            ]
-            table_rows.append(
-                ui.tags.tr(
-                    ui.tags.td(
-                        ui.tags.em("— Split Details —"),
-                        colspan="2",
-                        style="padding: 8px 12px; background-color: #f8f9fa; text-align: center; border-bottom: 1px solid #dee2e6;",
-                    )
-                )
-            )
-            for label, value in split_rows:
-                table_rows.append(
-                    ui.tags.tr(
-                        ui.tags.td(
-                            ui.tags.strong(label),
-                            style="padding: 8px 12px; border-bottom: 1px solid #dee2e6;",
-                        ),
-                        ui.tags.td(
-                            value,
-                            style="padding: 8px 12px; border-bottom: 1px solid #dee2e6; text-align: right;",
-                        ),
-                    )
-                )
-
-        return ui.tags.table(
-            ui.tags.tbody(*table_rows),
-            style="width: 100%; border-collapse: collapse; font-size: 1rem;",
-        )
+    @render.text
+    def split_total():
+        return f"${calc()['split_total']:,.2f}"
 
 
+# ── App ───────────────────────────────────────────────────────────────────────
 app = App(app_ui, server)
